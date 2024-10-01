@@ -1,5 +1,7 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function App() {
   return (
@@ -7,15 +9,40 @@ export default function App() {
       <View style={styles.city}>
         <Text style={styles.cityName}>Ansan</Text>
       </View>
-      <View style={styles.weather}>
-        <View style={styles.day}>
-          <Text style={styles.regDate}>Friday, 20, January</Text>
-          <Text style={styles.desc}>Sunny</Text>
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.weather}
+      >
+        <View style={styles.weatherInner}>
+          <View style={styles.day}>
+            <Text style={styles.regDate}>Friday, 20, January</Text>
+            <Text style={styles.desc}>Sunny</Text>
+          </View>
+          <View style={styles.tempCon}>
+            <Text style={styles.temp}>31</Text>
+          </View>
         </View>
-        <View style={styles.tempCon}>
-          <Text style={styles.temp}>31</Text>
+        <View style={styles.weatherInner}>
+          <View style={styles.day}>
+            <Text style={styles.regDate}>Friday, 20, January</Text>
+            <Text style={styles.desc}>Sunny</Text>
+          </View>
+          <View style={styles.tempCon}>
+            <Text style={styles.temp}>31</Text>
+          </View>
         </View>
-      </View>
+        <View style={styles.weatherInner}>
+          <View style={styles.day}>
+            <Text style={styles.regDate}>Friday, 20, January</Text>
+            <Text style={styles.desc}>Sunny</Text>
+          </View>
+          <View style={styles.tempCon}>
+            <Text style={styles.temp}>31</Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -35,8 +62,8 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "bold",
   },
-  weather: {
-    flex: 3,
+  weatherInner: {
+    width: SCREEN_WIDTH,
   },
   day: {
     justifyContent: "center",
