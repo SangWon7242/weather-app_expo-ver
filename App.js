@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
-import { GOOGLE_API_KEY } from "@env";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
+import { GOOGLE_API_KEY, WEAHTER_API_KEY } from "@env";
 import * as Location from "expo-location";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const myApiKey = GOOGLE_API_KEY;
+const weatherApiKey = WEAHTER_API_KEY;
 
 export default function App() {
   const [city, setCity] = useState(null);
-  const [curWeahterData, setCurWeahterData] = useState([]);
+  const [dailyWeather, setDailyWeather] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const [ok, setOk] = useState(true);
@@ -33,8 +41,6 @@ export default function App() {
     const responseToLocation = await fetch(apiUrl);
     const jsonFroLocation = await responseToLocation.json();
 
-    // console.log(jsonFroLocation);
-
     const addressComponents = jsonFroLocation.results[5].address_components;
 
     const cityAdress = addressComponents
@@ -44,6 +50,13 @@ export default function App() {
       .join(" ");
 
     setCity(cityAdress);
+
+    const weatherApiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts&units=metric&lang=kr&appid=${weatherApiKey}`;
+
+    const responseToWeahter = await fetch(weatherApiUrl);
+    const jsonForWeahter = await responseToWeahter.json();
+    console.log(jsonForWeahter.daily);
+    setDailyWeather(jsonForWeahter.daily);
   };
 
   useEffect(() => {
@@ -61,33 +74,26 @@ export default function App() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.weather}
       >
-        <View style={styles.weatherInner}>
-          <View style={styles.day}>
-            <Text style={styles.regDate}>Friday, 20, January</Text>
-            <Text style={styles.desc}>Sunny</Text>
+        {dailyWeather.length === 0 ? (
+          <View style={styles.weatherInner}>
+            <ActivityIndicator color="#00ff00" size="large" />
           </View>
-          <View style={styles.tempCon}>
-            <Text style={styles.temp}>29</Text>
-          </View>
-        </View>
-        <View style={styles.weatherInner}>
-          <View style={styles.day}>
-            <Text style={styles.regDate}>Friday, 20, January</Text>
-            <Text style={styles.desc}>Sunny</Text>
-          </View>
-          <View style={styles.tempCon}>
-            <Text style={styles.temp}>31</Text>
-          </View>
-        </View>
-        <View style={styles.weatherInner}>
-          <View style={styles.day}>
-            <Text style={styles.regDate}>Friday, 20, January</Text>
-            <Text style={styles.desc}>Sunny</Text>
-          </View>
-          <View style={styles.tempCon}>
-            <Text style={styles.temp}>31</Text>
-          </View>
-        </View>
+        ) : (
+          dailyWeather.map((day, index) => (
+            <View key={index} style={styles.weatherInner}>
+              <View style={styles.day}>
+                {/* <Text style={styles.desc}>{day.weather[0].main}</Text> */}
+                <Text style={styles.desc}>{day.weather[0].description}</Text>
+              </View>
+              <View style={styles.tempCon}>
+                <Text style={styles.temp}>
+                  {parseFloat(day.temp.day).toFixed(0)}
+                </Text>
+                <Text style={styles.degreeSymbol}>°</Text>
+              </View>
+            </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -127,14 +133,22 @@ const styles = StyleSheet.create({
   desc: {
     marginTop: 10,
     color: "black",
-    fontSize: 17,
+    fontSize: 40,
+    fontWeight: "bold",
   },
   tempCon: {
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
   },
   temp: {
     color: "black",
     fontSize: 173,
+  },
+  degreeSymbol: {
+    fontSize: 150,
+    position: "absolute",
+    top: 5,
+    right: 50,
   },
 });
