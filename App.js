@@ -6,19 +6,16 @@ import * as Location from "expo-location";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
+const myApiKey = GOOGLE_API_KEY;
+
 export default function App() {
   const [city, setCity] = useState(null);
-  const [location, setLocation] = useState(null);
+  const [curWeahterData, setCurWeahterData] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const [ok, setOk] = useState(true);
 
-  const locationData = async () => {
-    /*
-    const permission = await Location.requestForegroundPermissionsAsync();
-    console.log(permission);
-    */
-
+  const getWeather = async () => {
     const { granted } = await Location.requestForegroundPermissionsAsync();
     if (!granted) {
       setOk(false); // 권한 부여 실패, 해당 값에 따라 다른 UI창을 보여줄 수 있음
@@ -31,31 +28,26 @@ export default function App() {
       coords: { latitude, longitude },
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
 
-    const myApiKey = GOOGLE_API_KEY;
     const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${myApiKey}`;
 
-    const response = await fetch(apiUrl);
-    const data = await response.json();
+    const responseToLocation = await fetch(apiUrl);
+    const jsonFroLocation = await responseToLocation.json();
 
-    /*
-    const address = await Location.reverseGeocodeAsync(
-      { latitude, longitude },
-      { useGoogleMaps: true }
-    );
+    // console.log(jsonFroLocation);
 
-    console.log(address);
-    console.log(address[0].city);
+    const addressComponents = jsonFroLocation.results[5].address_components;
 
-    const cityAdress = address[0].city;
-    */
+    const cityAdress = addressComponents
+      .slice(0, 3) // 고잔동 단원구 안산시
+      .reverse()
+      .map((el) => el.long_name)
+      .join(" ");
 
-    const cityAdress = data.results[5].formatted_address;
     setCity(cityAdress);
-    console.log(cityAdress);
   };
 
   useEffect(() => {
-    locationData();
+    getWeather();
   }, []);
 
   return (
