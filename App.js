@@ -18,6 +18,39 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const myApiKey = GOOGLE_API_KEY;
 const weatherApiKey = WEAHTER_API_KEY;
 
+const RegDate = () => {
+  const [currentDate, setCurrentDate] = useState(null);
+
+  useEffect(() => {
+    const dayOfTheWeek = ["월", "화", "수", "목", "금", "토", "일"];
+
+    // date 객체 생성
+    const date = new Date();
+
+    const options = { month: "short", day: "numeric" };
+    const dateString = date.toLocaleDateString("kr", options);
+
+    let day = date.getDay(); // 요일(요일별로 0 ~ 6을 반환)
+
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    const ampm = hours > 12 ? "pm" : "am";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0시 인 경우 12시
+    // 0, true, null 동격
+
+    const minuteString = minutes < 10 ? `0${minutes}` : minutes;
+
+    const formattedDate = `${dateString}, ${dayOfTheWeek[day]}, ${hours}:${minuteString}${ampm}`;
+
+    setCurrentDate(formattedDate);
+  }, []);
+
+  return <Text style={styles.regDate}>{currentDate}</Text>;
+};
+
 const WeatherDesc = ({ day }) => {
   const result = weatherDescKo.find((item) => {
     const id = day.weather[0].id;
@@ -96,6 +129,9 @@ export default function App() {
       <View style={styles.city}>
         <Text style={styles.cityName}>{city}</Text>
       </View>
+      <View style={styles.regDateCon}>
+        <RegDate />
+      </View>
       <ScrollView
         horizontal
         pagingEnabled
@@ -149,6 +185,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
   },
+  regDateCon: {
+    alignItems: "center",
+  },
   regDate: {
     borderRadius: 20,
     backgroundColor: "black",
@@ -157,9 +196,13 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     paddingLeft: 20,
     paddingRight: 20,
+    width: 200,
+    alignItems: "center",
+    textAlign: "center",
+    fontWeight: "bold",
   },
   desc: {
-    marginTop: 10,
+    marginTop: 20,
     color: "black",
     fontSize: 25,
     fontWeight: "bold",
