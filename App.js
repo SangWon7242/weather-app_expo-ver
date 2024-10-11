@@ -8,6 +8,8 @@ import {
   Dimensions,
   ActivityIndicator,
 } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { weatherDescKo } from "./weatherDescKo";
 import { GOOGLE_API_KEY, WEAHTER_API_KEY } from "@env";
 import * as Location from "expo-location";
 
@@ -15,6 +17,32 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const myApiKey = GOOGLE_API_KEY;
 const weatherApiKey = WEAHTER_API_KEY;
+
+const WeatherDesc = ({ day }) => {
+  const result = weatherDescKo.find((item) => {
+    const id = day.weather[0].id;
+    return Object.keys(item)[0] == id;
+  });
+
+  const descRs = result
+    ? Object.values(result)[0]
+    : "해당하는 날씨 정보가 없습니다.";
+
+  const iconName = result ? (
+    Object.values(result)[1]
+  ) : (
+    <MaterialCommunityIcons name="image-filter-none" size={30} color="black" />
+  );
+
+  return (
+    <>
+      <Text style={styles.desc}>{descRs}</Text>
+      <Text style={styles.weahtherIcon}>
+        <MaterialCommunityIcons name={iconName} size={30} color="black" />
+      </Text>
+    </>
+  );
+};
 
 export default function App() {
   const [city, setCity] = useState(null);
@@ -82,8 +110,7 @@ export default function App() {
           dailyWeather.map((day, index) => (
             <View key={index} style={styles.weatherInner}>
               <View style={styles.day}>
-                {/* <Text style={styles.desc}>{day.weather[0].main}</Text> */}
-                <Text style={styles.desc}>{day.weather[0].description}</Text>
+                <WeatherDesc day={day} />
               </View>
               <View style={styles.tempCon}>
                 <Text style={styles.temp}>
@@ -120,6 +147,7 @@ const styles = StyleSheet.create({
   day: {
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
   },
   regDate: {
     borderRadius: 20,
@@ -133,8 +161,12 @@ const styles = StyleSheet.create({
   desc: {
     marginTop: 10,
     color: "black",
-    fontSize: 40,
+    fontSize: 25,
     fontWeight: "bold",
+  },
+  weahtherIcon: {
+    marginTop: 10,
+    marginLeft: 10,
   },
   tempCon: {
     justifyContent: "center",
