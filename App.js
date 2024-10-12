@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     textAlign: "center",
     fontWeight: "bold",
+    overflow: "hidden",
   },
   desc: {
     marginTop: 20,
