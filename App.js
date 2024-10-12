@@ -18,19 +18,18 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const myApiKey = GOOGLE_API_KEY;
 const weatherApiKey = WEAHTER_API_KEY;
 
-const RegDate = () => {
+const useRegDate = () => {
   const [currentDate, setCurrentDate] = useState(null);
 
   useEffect(() => {
-    const dayOfTheWeek = ["월", "화", "수", "목", "금", "토", "일"];
-
     // date 객체 생성
     const date = new Date();
 
     const options = { month: "short", day: "numeric" };
-    const dateString = date.toLocaleDateString("kr", options);
+    const dateString = date.toLocaleDateString("ko", options);
 
-    let day = date.getDay(); // 요일(요일별로 0 ~ 6을 반환)
+    const weekday = date.toLocaleDateString("ko", { weekday: "short" });
+    const weekdayFormat = weekday.replace(/(\(.*?\))/g, "").trim(); // 정규표현식 통해 소괄호 제거
 
     let hours = date.getHours();
     let minutes = date.getMinutes();
@@ -43,12 +42,28 @@ const RegDate = () => {
 
     const minuteString = minutes < 10 ? `0${minutes}` : minutes;
 
-    const formattedDate = `${dateString}, ${dayOfTheWeek[day]}, ${hours}:${minuteString}${ampm}`;
+    const formattedDate = `${dateString}, ${weekdayFormat}, ${hours}:${minuteString}${ampm}`;
 
     setCurrentDate(formattedDate);
   }, []);
 
-  return <Text style={styles.regDate}>{currentDate}</Text>;
+  return currentDate;
+};
+
+const GetWeekDays = ({ dt }) => {
+  const [day, setDay] = useState(null);
+
+  useEffect(() => {
+    // date 객체 생성
+    const date = new Date(dt * 1000);
+
+    const weekday = date.toLocaleDateString("ko", { weekday: "short" });
+    const weekdayFormat = weekday.replace(/(\(.*?\))/g, "").trim(); // 정규표현식 통해 소괄호 제거
+
+    setDay(weekdayFormat);
+  }, []);
+
+  return <Text style={styles.dayInfoText}>{day}</Text>;
 };
 
 const WeatherDesc = ({ day }) => {
@@ -78,10 +93,11 @@ const WeatherDesc = ({ day }) => {
 };
 
 export default function App() {
-  const [city, setCity] = useState(null);
+  const [city, setCity] = useState("Loding...");
   const [dailyWeather, setDailyWeather] = useState([]);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const currentDate = useRegDate();
 
+  const [errorMsg, setErrorMsg] = useState(null);
   const [ok, setOk] = useState(true);
 
   const getWeather = async () => {
@@ -113,8 +129,6 @@ export default function App() {
     const responseToWeahter = await fetch(weatherApiUrl);
     const jsonForWeahter = await responseToWeahter.json();
     setDailyWeather(jsonForWeahter.daily);
-
-    console.log(jsonForWeahter.daily);
   };
 
   useEffect(() => {
@@ -128,7 +142,7 @@ export default function App() {
         <Text style={styles.cityName}>{city}</Text>
       </View>
       <View style={styles.regDateCon}>
-        <RegDate />
+        <Text style={styles.regDate}>{currentDate}</Text>
       </View>
       <ScrollView
         horizontal
@@ -152,6 +166,34 @@ export default function App() {
                 </Text>
                 <Text style={styles.degreeSymbol}>°</Text>
               </View>
+              <View style={styles.otherInfo}>
+                <View style={styles.infoTitleBox}>
+                  <Text style={styles.infoTitle}>Weekly Weather</Text>
+                </View>
+                <View style={styles.otherInfoInner}>
+                  <View style={styles.infoItem}>
+                    <GetWeekDays dt={day.dt} />
+                  </View>
+                  <View style={styles.infoItem}>
+                    <View style={styles.tempInfo}>
+                      <Text style={styles.tempSub}>
+                        {parseFloat(day.temp.min).toFixed(0)}
+                      </Text>
+                      <Text style={styles.degreeSymbolSmall}>°</Text>
+                    </View>
+                    <Text style={styles.tempText}>최저온도</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <View style={styles.tempInfo}>
+                      <Text style={styles.tempSub}>
+                        {parseFloat(day.temp.max).toFixed(0)}
+                      </Text>
+                      <Text style={styles.degreeSymbolSmall}>°</Text>
+                    </View>
+                    <Text style={styles.tempText}>최고온도</Text>
+                  </View>
+                </View>
+              </View>
             </View>
           ))
         )}
@@ -169,7 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   city: {
-    flex: 0.7,
+    flex: 1.5,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -177,6 +219,7 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 40,
     fontWeight: "bold",
+    marginTop: 5,
   },
   weatherInner: {
     width: SCREEN_WIDTH,
@@ -216,7 +259,6 @@ const styles = StyleSheet.create({
   tempCon: {
     justifyContent: "center",
     alignItems: "center",
-    position: "relative",
   },
   temp: {
     color: "black",
@@ -225,7 +267,52 @@ const styles = StyleSheet.create({
   degreeSymbol: {
     fontSize: 150,
     position: "absolute",
-    top: 5,
-    right: 50,
+    top: 1,
+    right: 35,
+  },
+  infoTitleBox: {
+    width: 300,
+    alignSelf: "center",
+  },
+  infoTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    paddingLeft: 13,
+    marginBottom: 10,
+  },
+  otherInfoInner: {
+    alignSelf: "center",
+    width: 300,
+    height: 120,
+    backgroundColor: "black",
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  infoItem: {
+    flex: 1,
+    alignItems: "center",
+    borderWidth: 2,
+  },
+  dayInfoText: {
+    fontSize: 60,
+    color: "white",
+    paddingLeft: 8,
+  },
+  tempSub: {
+    fontSize: 40,
+    color: "white",
+  },
+  degreeSymbolSmall: {
+    position: "absolute",
+    color: "white",
+    fontSize: 30,
+    top: 2,
+    right: -12,
+  },
+  tempText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
