@@ -71,7 +71,7 @@ const WeatherDesc = ({ day }) => {
     <>
       <Text style={styles.desc}>{descRs}</Text>
       <Text style={styles.weahtherIcon}>
-        <MaterialCommunityIcons name={iconName} size={30} color="black" />
+        <MaterialCommunityIcons name={iconName} size={35} color="black" />
       </Text>
     </>
   );
@@ -102,13 +102,9 @@ export default function App() {
     const responseToLocation = await fetch(apiUrl);
     const jsonFroLocation = await responseToLocation.json();
 
+    // 위치 정보를 기반으로 지역명 가져오기
     const addressComponents = jsonFroLocation.results[5].address_components;
-
-    const cityAdress = addressComponents
-      .slice(0, 3) // 고잔동 단원구 안산시
-      .reverse()
-      .map((el) => el.long_name)
-      .join(" ");
+    const cityAdress = addressComponents[2].long_name;
 
     setCity(cityAdress);
 
@@ -116,8 +112,9 @@ export default function App() {
 
     const responseToWeahter = await fetch(weatherApiUrl);
     const jsonForWeahter = await responseToWeahter.json();
-    console.log(jsonForWeahter.daily);
     setDailyWeather(jsonForWeahter.daily);
+
+    console.log(jsonForWeahter.daily);
   };
 
   useEffect(() => {
@@ -127,6 +124,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.city}>
+        <Text style={styles.myLocation}>나의 위치</Text>
         <Text style={styles.cityName}>{city}</Text>
       </View>
       <View style={styles.regDateCon}>
@@ -167,8 +165,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffff42",
   },
+  myLocation: {
+    fontWeight: "bold",
+  },
   city: {
-    flex: 1,
+    flex: 0.7,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -179,6 +180,7 @@ const styles = StyleSheet.create({
   },
   weatherInner: {
     width: SCREEN_WIDTH,
+    marginTop: 15,
   },
   day: {
     justifyContent: "center",
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   weahtherIcon: {
-    marginTop: 10,
+    marginTop: 18,
     marginLeft: 10,
   },
   tempCon: {
